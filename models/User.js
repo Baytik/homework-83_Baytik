@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+const nanoid = require('nanoid');
 
 const SALT_WORK_FACTOR = 10;
 
@@ -14,8 +15,16 @@ const UserSchema = new Schema({
    password: {
        type: String,
        required: true
-   }
+   },
+    token: {
+       type: String,
+       required: true
+    }
 });
+
+UserSchema.methods.generateToken = function() {
+  this.token = nanoid();
+};
 
 UserSchema.pre('save', async function (next) {
     if (!this.isModified('password')) return next();

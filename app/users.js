@@ -9,6 +9,22 @@ router.get('/', async (req, res) => {
    res.send(users)
 });
 
+router.get('/private', async (req, res) => {
+   const authorization = req.get('Authorization');
+   if (!authorization) {
+       return res.status(401).send({error: 'Not authorization'})
+   }
+   const [type, token] = authorization.split(' ');
+   if (type !== 'Token' || !token) {
+       return res.status(401).send({error: 'Authorization type wrong or token not present'});
+   }
+   const user = await User.findOne({token});
+   if (!user) {
+       return res.status(401).send({error: 'No user with this token'})
+   }
+   return res.send({message: 'Welcome, ' + user.username});
+});
+
 router.post('/', async (req, res) => {
     const object = {
       username: req.body.username,
@@ -16,6 +32,7 @@ router.post('/', async (req, res) => {
     };
    const user = new User(object);
    try {
+       user.generateToken();
        await user.save();
        return res.send(user)
    } catch (error) {
@@ -33,7 +50,9 @@ router.post('/sessions', async (req, res) => {
    if (!isMatch) {
        return res.status(400).send({error: 'Username or password not correct!'})
    }
-   return res.send({message: 'Username and password correct'})
+   user.generateToken();
+   await user.save();
+   return res.send({token: user.token})
 });
 
 module.exports = router;

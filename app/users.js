@@ -4,27 +4,6 @@ const bcrypt = require("bcrypt");
 
 const router = express.Router();
 
-router.get('/', async (req, res) => {
-   const users = await User.find();
-   res.send(users)
-});
-
-router.get('/private', async (req, res) => {
-   const authorization = req.get('Authorization');
-   if (!authorization) {
-       return res.status(401).send({error: 'Not authorization'})
-   }
-   const [type, token] = authorization.split(' ');
-   if (type !== 'Token' || !token) {
-       return res.status(401).send({error: 'Authorization type wrong or token not present'});
-   }
-   const user = await User.findOne({token});
-   if (!user) {
-       return res.status(401).send({error: 'No user with this token'})
-   }
-   return res.send({message: 'Welcome, ' + user.username});
-});
-
 router.post('/', async (req, res) => {
     const object = {
       username: req.body.username,

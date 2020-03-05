@@ -23,16 +23,15 @@ router.get('/', async (req, res) => {
 });
 
 router.post('/', upload.single('image'), async (req, res) => {
+    if (req.file) {
+        req.body.image = req.file.filename;
+    }
     const object = {
         artist: req.body.artist,
         information: req.body.information,
         image: req.body.image
     };
     const artist = new Artist(object);
-
-    if (req.file) {
-        req.body.image = req.file.filename;
-    }
 
     try {
         await artist.save();
